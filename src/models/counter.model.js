@@ -13,4 +13,4 @@ const counterSchema = new Schema({
   }
 })
 
-export const Counter = mongoose.model("Counter", counterSchema);;
+export const Counter = mongoose.model("Counter", counterSchema);

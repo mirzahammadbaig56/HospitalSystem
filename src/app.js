@@ -13,6 +13,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message: err.message,
+    errors: err.errors || [],
   });
 });
 

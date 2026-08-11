@@ -12,13 +12,10 @@ const patientSchema = new Schema(
       required: true,
       lowercase: true,
       trim: true,
-      minlength: 3,
     },
     age: {
       type: Number,
       required: true,
-      min: 0,
-      max: 120,
     },
     gender: {
       type: String,
@@ -33,14 +30,9 @@ const patientSchema = new Schema(
     phoneNumber: {
       type: String,
       required: true,
-      match: [
-        /^03\d{9}$/,
-        "Phone number must be a valid Pakistani number (e.g. 03001234567)",
-      ],
     },
     bloodGroup: {
       type: String,
-      default: "B+",
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
     },
   },
@@ -48,18 +40,14 @@ const patientSchema = new Schema(
 );
 
 patientSchema.pre("save", async function () {
-  if (!this.isNew) return;
-
-  const counter = await Counter.findOneAndUpdate(
-    { name: "patientNumber" },
-    { $inc: { val: 1 } },
-    {
-      new: true,
-      upsert: true,
-    },
-  );
-
-  this.patientNumber = counter.val;
+  if (this.isNew) {
+    const counter = await Counter.findOneAndUpdate(
+      { name: "patientNumber" },
+      { $inc: { val: 1 } },
+      { new: true, upsert: true },
+    );
+    this.patientNumber = counter.val;
+  }
 });
 
 export const Patient = mongoose.model("Patient", patientSchema);
