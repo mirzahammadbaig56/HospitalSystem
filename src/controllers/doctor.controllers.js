@@ -113,14 +113,20 @@ const postAvailability = asyncHandler(async (req, res, next) => {
     const errors = result.error.issues.map((err) => err.message);
     throw new ApiError(400, "Validation failed", errors);
   }
-  const doctor = await Doctor.findOneAndUpdate(
-    { doctorNumber },
-    { $push: { availability: result.data } },
-    { new: true, runValidators: true },
-  );
+  const doctor = await Doctor.findOne({ doctorNumber });
   if (!doctor) {
     throw new ApiError(404, "Doctor not found");
   }
+  const { day, startTime, endTime } = result.data;
+  const hasOverlap = doctor.availability.some(
+    (slot) =>
+      slot.day === day && slot.startTime < endTime && startTime < slot.endTime,
+  );
+  if (hasOverlap) {
+    throw new ApiError(409, "This slot overlaps with an existing availability");
+  }
+  doctor.availability.push(result.data);
+  await doctor.save();
   res
     .status(200)
     .json(new ApiResponse(200, "Availability added successfully", doctor));
@@ -133,4 +139,6 @@ export {
   replaceDoctor,
   updateDoctor,
   deleteDoctor,
+  getAvailability,
+  postAvailability,
 };
