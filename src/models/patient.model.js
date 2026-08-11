@@ -30,6 +30,7 @@ const patientSchema = new Schema(
     phoneNumber: {
       type: String,
       required: true,
+      trim: true,
     },
     bloodGroup: {
       type: String,
